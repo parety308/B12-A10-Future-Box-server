@@ -36,7 +36,12 @@ async function run() {
 
         //get all items
         app.get('/items', async (req, res) => {
-            const cursor = Itemscollection.find();
+            const email = req.query.email;
+            const query = {};
+            if (email) {
+                query["postedBy.email"] = email;
+            }
+            const cursor = Itemscollection.find(query);
             const items = await cursor.toArray();
             res.send(items);
         });
@@ -49,20 +54,40 @@ async function run() {
             res.send(item);
         });
 
-        app.post('/users', async (req, res) => {
-            const newUser = req.body;
-            const email = req.query.email;
-            // const query = { email: email };
-            // const excitingUser = await usersCollection.find(query);
-            // if (excitingUser) {
-                // res.send('Already added this user');
-            // }
-            // else {
-                const result = await usersCollection.insertOne(newUser);
-                res.send(result);
-            // }
+        //get recent items
+        app.get('/recent-items', async (req, res) => {
+            const cursor = Itemscollection.find().sort({ postedDate: -1 }).limit(6);
+            const results = await cursor.toArray();
+            res.send(results);
         });
 
+        //add a item
+        app.post('/items', async (req, res) => {
+            const newItem = req.body;
+            const result = await Itemscollection.insertOne(newItem);
+            res.send(result);
+        });
+
+
+        //update a item
+        app.patch('/items/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedItem = req.body;
+            const query = { _id: new ObjectId(id) };
+            const update = {
+                $set: updatedItem
+            }
+            const result = await Itemscollection.updateOne(query, update);
+            res.send(result);
+        });
+
+        //delete a item
+        app.delete('/items/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await Itemscollection.deleteOne(query);
+            res.send(result);
+        });
 
 
     } catch (err) {
