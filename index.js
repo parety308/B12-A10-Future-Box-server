@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion ,ObjectId} = require('mongodb');
 require('dotenv').config();
 
 
@@ -19,28 +19,41 @@ const client = new MongoClient(uri, {
     }
 });
 
-
 async function run() {
     try {
-        // Connect the client to the server
         await client.connect();
-        await client.db("admin").command({ ping: 1 });
-         const Itemscollection = client.db('homeNest').collection('items');
+        const db = client.db('homeNest');
+        const Itemscollection = db.collection('items');
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
+        //post an item
         app.post('/items', async (req, res) => {
             const newItem = req.body;
-           
-        }
+            const result = await Itemscollection.insertOne(newItem);
+            res.send(result);
+        });
 
-    }
+        //get all items
+        app.get('/items', async (req, res) => {
+            const cursor = Itemscollection.find();
+            const items = await cursor.toArray();
+            res.send(items);
+        });
 
-    finally {
-        // Ensures that the client will close when you finish
-        await client.close();
-
+        //get single item
+        app.get('/items/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const item = await Itemscollection.findOne(query);
+            res.send(item);
+        });
+    } catch (err) {
+        console.error(err);
     }
 }
+
+run().catch(console.dir);
+
 
 //simple test route
 app.get('/', (req, res) => {
