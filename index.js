@@ -25,8 +25,6 @@ async function run() {
         const db = client.db('homeNest');
         const Itemscollection = db.collection('items');
         const usersCollection = db.collection('users');
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-
         //post an item
         app.post('/items', async (req, res) => {
             const newItem = req.body;
