@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion ,ObjectId} = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 
@@ -24,6 +24,7 @@ async function run() {
         await client.connect();
         const db = client.db('homeNest');
         const Itemscollection = db.collection('items');
+        const usersCollection = db.collection('users');
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
         //post an item
@@ -47,6 +48,23 @@ async function run() {
             const item = await Itemscollection.findOne(query);
             res.send(item);
         });
+
+        app.post('/users', async (req, res) => {
+            const newUser = req.body;
+            const email = req.query.email;
+            // const query = { email: email };
+            // const excitingUser = await usersCollection.find(query);
+            // if (excitingUser) {
+                // res.send('Already added this user');
+            // }
+            // else {
+                const result = await usersCollection.insertOne(newUser);
+                res.send(result);
+            // }
+        });
+
+
+
     } catch (err) {
         console.error(err);
     }
