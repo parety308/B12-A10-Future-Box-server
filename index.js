@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(cors());
+app.use(cors({origin:['https://assigment-a-10-client.netlify.app']}));
 app.use(express.json());
 
 //mongodb connection
@@ -21,7 +21,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
         const db = client.db('homeNest');
         const Itemscollection = db.collection('items');
         const ReviewsCollection = db.collection('reviews');
