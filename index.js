@@ -24,7 +24,8 @@ async function run() {
         await client.connect();
         const db = client.db('homeNest');
         const Itemscollection = db.collection('items');
-        const usersCollection = db.collection('users');
+        const ReviewsCollection = db.collection('reviews');
+        // const usersCollection = db.collection('users');
         //post an item
         app.post('/items', async (req, res) => {
             const newItem = req.body;
@@ -52,6 +53,15 @@ async function run() {
             res.send(item);
         });
 
+        //get items by user email
+        app.get('/items/:email', async (req, res) => {
+            const userEmail = req.params.email;
+            const query = { "postedBy.email": userEmail };
+            const cursor = Itemscollection.find(query);
+            const items = await cursor.toArray();
+            res.send(items);
+
+        });
         //get recent items
         app.get('/recent-items', async (req, res) => {
             const cursor = Itemscollection.find().sort({ postedDate: -1 }).limit(6);
@@ -87,7 +97,31 @@ async function run() {
             res.send(result);
         });
 
+        // Add a review
+        app.post('/reviews', async (req, res) => {
+            const review = req.body;
+            const result = await ReviewsCollection.insertOne(review);
+            res.send(result);
+        });
 
+        // Get all reviews
+        app.get('/reviews', async (req, res) => {
+            const email = req.query.email;
+            if (!email) return res.status(400).send({ error: "Please provide reviewerEmail in query" });
+
+            const cursor = ReviewsCollection.find({ reviewerEmail: email });
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        });
+
+        // Get reviews for a specific item
+        app.get('/reviews/:itemId', async (req, res) => {
+            const itemId = req.params.itemId;
+            const query = { propertyId: itemId };
+            const cursor = ReviewsCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        });
     } catch (err) {
         console.error(err);
     }
