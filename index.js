@@ -54,14 +54,14 @@ async function run() {
         });
 
         //get items by user email
-        app.get('/items/:email', async (req, res) => {
-            const userEmail = req.params.email;
-            const query = { "postedBy.email": userEmail };
-            const cursor = Itemscollection.find(query);
-            const items = await cursor.toArray();
-            res.send(items);
-
+        app.get('/items', async (req, res) => {
+            const userEmail = req.query.email;
+            if (!userEmail) return res.status(400).send({ error: "Please provide reviewerEmail in query" });
+            const cursor = Itemscollection.find({ "postedBy.email": userEmail });
+            const reviews = await cursor.toArray();
+            res.send(reviews);
         });
+
         //get recent items
         app.get('/recent-items', async (req, res) => {
             const cursor = Itemscollection.find().sort({ postedDate: -1 }).limit(6);
